@@ -39,12 +39,13 @@
         }
 
         h2 {
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             color: #38bdf8;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
         }
 
-        p {
+        #subtitulo-local {
             font-size: 0.85rem;
             color: #94a3b8;
             margin-bottom: 14px;
@@ -60,6 +61,7 @@
             align-items: center;
             justify-content: center;
             border: 2px solid #334155;
+            position: relative;
         }
 
         video {
@@ -76,6 +78,7 @@
             font-size: 0.95rem;
             background: #1e293b;
             color: #94a3b8;
+            transition: all 0.3s ease;
         }
 
         .alerta-lixo {
@@ -88,6 +91,12 @@
             background: rgba(34, 197, 94, 0.25) !important;
             color: #22c55e !important;
             border: 1px solid #22c55e;
+        }
+
+        .alerta-analisando {
+            background: rgba(234, 179, 8, 0.2) !important;
+            color: #eab308 !important;
+            border: 1px solid #eab308;
         }
 
         .btn-action {
@@ -111,20 +120,14 @@
             color: #ffffff;
             display: none;
         }
-
-        .btn-dispatch:disabled {
-            background: #475569;
-            color: #94a3b8;
-            cursor: not-allowed;
-        }
     </style>
 </head>
 
 <body>
 
     <div class="card">
-        <h2>CÂMERA INTELIGENTE #01</h2>
-        <p>Aponte a câmera traseira para o bueiro da maquete</p>
+        <h2 id="titulo-camera">CÂMERA INTELIGENTE</h2>
+        <p id="subtitulo-local">Aponte a câmera traseira para a maquete</p>
 
         <div id="video-container">
             <video id="webcam" autoplay playsinline muted></video>
@@ -133,7 +136,7 @@
         <div id="status">Toque no botão abaixo para ligar a câmera</div>
 
         <button id="btn-start" class="btn-action btn-start" onclick="iniciarSistema()">
-            LIGAR câmera DE INSPEÇÃO
+            LIGAR CÂMERA DE INSPEÇÃO
         </button>
 
         <button id="btn-dispatch" class="btn-action btn-dispatch" onclick="dispararAlertaManual()">
@@ -142,15 +145,26 @@
     </div>
 
     <script>
-        // Link do modelo do Teachable Machine:
+        // Se você retreinar adicionando a classe "Neutro", atualize este link:
         const URL_MODELO = "https://teachablemachine.withgoogle.com/models/1ncfocFIl/";
 
-        // Substitua pelo link de execução da sua Web App do Apps Script:
+        // Link da Web App do Apps Script (terminado em /exec):
         const WEBHOOK_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyDIw2kWWaXTh7Od8t7KTk3BTUQxciv3rDUpJHp78zICILxY_tGdOs3VM4I8JZ16Dk6/exec";
+
+        // Captura o local via URL (ex: ?local=Bueiro - Rua Yporã) ou usa o padrão
+        const urlParams = new URLSearchParams(window.location.search);
+        const LOCAL_MONITORADO = urlParams.get('local') || "Bueiro - Rua dos Cambucizeiros";
 
         let model, videoElement;
         let ultimoEnvio = 0;
         let classeAtual = "";
+
+        // Controle de estabilização (Debounce)
+        let tempoInicioDeteccaoLixo = 0;
+        const TEMPO_MINIMO_ESTABILIZACAO_MS = 2000; // 2 segundos estáveis para disparar
+
+        // Atualiza cabeçalho com o local
+        document.getElementById("titulo-camera").innerText = LOCAL_MONITORADO;
 
         async function iniciarSistema() {
             const btn = document.getElementById("btn-start");
@@ -202,21 +216,45 @@
                 classeAtual = melhorClasse;
                 const pct = (maiorProb * 100).toFixed(0);
                 const statusDiv = document.getElementById("status");
+                const agora = Date.now();
 
-                if (melhorClasse.toLowerCase().includes("lixo") && maiorProb > 0.80) {
-                    statusDiv.className = "alerta-lixo";
-                    statusDiv.innerText = `🚨 LIXO DETETADO (${pct}%)`;
-
-                    // Disparo automático com intervalo de 20 segundos
-                    const agora = Date.now();
-                    if (agora - ultimoEnvio > 20000) {
-                        ultimoEnvio = agora;
-                        enviarParaCentral("Bueiro Rua das Flores", "Lixo no Bueiro");
+                // 1. FILTRO DE CLASSE NEUTRA: se for fundo ou incerto, reseta contadores
+                if (melhorClasse.toLowerCase().includes("neutro") || melhorClasse.toLowerCase().includes("ambiente")) {
+                    tempoInicioDeteccaoLixo = 0;
+                    statusDiv.className = "";
+                    statusDiv.innerText = `Ambiente Estável (${pct}%)`;
+                }
+                // 2. DETECÇÃO DE LIXO COM PERSISTÊNCIA TEMPORAL
+                else if (melhorClasse.toLowerCase().includes("lixo") && maiorProb > 0.85) {
+                    if (tempoInicioDeteccaoLixo === 0) {
+                        tempoInicioDeteccaoLixo = agora;
                     }
-                } else if (melhorClasse.toLowerCase().includes("limpo") && maiorProb > 0.70) {
+
+                    let tempoDecorrido = agora - tempoInicioDeteccaoLixo;
+
+                    if (tempoDecorrido >= TEMPO_MINIMO_ESTABILIZACAO_MS) {
+                        statusDiv.className = "alerta-lixo";
+                        statusDiv.innerText = `🚨 LIXO CONFIRMADO (${pct}%)`;
+
+                        // Cooldown de 20 segundos entre envios automáticos
+                        if (agora - ultimoEnvio > 20000) {
+                            ultimoEnvio = agora;
+                            enviarParaCentral(LOCAL_MONITORADO, "Lixo no Bueiro");
+                        }
+                    } else {
+                        statusDiv.className = "alerta-analisando";
+                        statusDiv.innerText = `⚠️ Analisando resíduo... (${pct}%)`;
+                    }
+                }
+                // 3. BUEIRO LIMPO
+                else if (melhorClasse.toLowerCase().includes("limpo") && maiorProb > 0.80) {
+                    tempoInicioDeteccaoLixo = 0;
                     statusDiv.className = "alerta-limpo";
                     statusDiv.innerText = `✅ BUEIRO LIMPO (${pct}%)`;
-                } else {
+                }
+                // 4. OUTROS ESTADOS
+                else {
+                    tempoInicioDeteccaoLixo = 0;
                     statusDiv.className = "";
                     statusDiv.innerText = `${melhorClasse} (${pct}%)`;
                 }
@@ -226,7 +264,6 @@
 
         async function enviarParaCentral(local, ocorrencia) {
             const statusDiv = document.getElementById("status");
-            const textoAnterior = statusDiv.innerText;
             statusDiv.innerText = "Enviando alerta para a Central...";
 
             try {
@@ -239,15 +276,15 @@
                         ocorrencia: ocorrencia
                     })
                 });
-                statusDiv.innerText = "🚨 ALERTA REGISTADO NA CENTRAL!";
-                setTimeout(() => { statusDiv.innerText = textoAnterior; }, 3000);
+                statusDiv.innerText = "🚨 OCORRÊNCIA REGISTRADA NA SALA DE SITUAÇÃO!";
+                setTimeout(() => { tempoInicioDeteccaoLixo = 0; }, 3000);
             } catch (err) {
                 console.error("Erro no envio:", err);
             }
         }
 
         function dispararAlertaManual() {
-            enviarParaCentral("Bueiro Rua das Flores", classeAtual || "Lixo no Bueiro");
+            enviarParaCentral(LOCAL_MONITORADO, classeAtual || "Lixo no Bueiro");
         }
     </script>
 </body>
