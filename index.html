@@ -13,7 +13,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: system-ui, sans-serif;
+            font-family: system-ui, -apple-system, sans-serif;
         }
 
         body {
@@ -30,7 +30,7 @@
 
         .card {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             background: #161f30;
             border: 1.5px solid #26354a;
             border-radius: 16px;
@@ -50,9 +50,9 @@
             margin-bottom: 14px;
         }
 
-        #webcam-container {
+        #video-container {
             width: 100%;
-            height: 300px;
+            height: 280px;
             background: #000;
             border-radius: 12px;
             overflow: hidden;
@@ -60,11 +60,12 @@
             align-items: center;
             justify-content: center;
             border: 2px solid #334155;
+            position: relative;
         }
 
-        #webcam-container canvas {
-            width: 100% !important;
-            height: 100% !important;
+        video {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
         }
 
@@ -73,7 +74,7 @@
             padding: 12px;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 0.95rem;
             background: #1e293b;
             color: #94a3b8;
         }
@@ -89,6 +90,19 @@
             color: #22c55e !important;
             border: 1px solid #22c55e;
         }
+
+        .btn-start {
+            margin-top: 14px;
+            width: 100%;
+            padding: 14px;
+            background: #0284c7;
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -98,69 +112,84 @@
         <h2>CÂMERA INTELIGENTE #01</h2>
         <p>Aponte a câmera traseira para o bueiro da maquete</p>
 
-        <div id="webcam-container"></div>
-        <div id="status">Carregando IA e Câmera...</div>
+        <div id="video-container">
+            <video id="webcam" autoplay playsinline muted></video>
+        </div>
+
+        <div id="status">Toque no botão abaixo para ligar a câmera</div>
+
+        <button id="btn-start" class="btn-start" onclick="iniciarSistema()">
+            LIGAR CÂMERA DE INSPEÇÃO
+        </button>
     </div>
 
     <script>
         const URL_MODELO = "https://teachablemachine.withgoogle.com/models/1ncfocFIL/";
-        let model, webcam, maxPredictions;
+        let model, videoElement;
 
-        async function init() {
+        async function iniciarSistema() {
+            const btn = document.getElementById("btn-start");
             const statusDiv = document.getElementById("status");
+            videoElement = document.getElementById("webcam");
+
+            btn.style.display = "none";
+            statusDiv.innerText = "Solicitando permissão da câmera...";
+
             try {
+                // Força câmera traseira com fallback automático
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: "environment" } },
+                    audio: false
+                });
+
+                videoElement.srcObject = stream;
+                await videoElement.play();
+
+                statusDiv.innerText = "Carregando inteligência artificial...";
                 const modelURL = URL_MODELO + "model.json";
                 const metadataURL = URL_MODELO + "metadata.json";
 
                 model = await tmImage.load(modelURL, metadataURL);
-                maxPredictions = model.getTotalClasses();
+                statusDiv.innerText = "IA Pronta. Monitorando...";
 
-                // flip = false (não espelha) e facingMode = environment (força câmera traseira)
-                webcam = new tmImage.Webcam(320, 320, false);
-                await webcam.setup({ facingMode: "environment" });
-                await webcam.play();
-                window.requestAnimationFrame(loop);
-
-                document.getElementById("webcam-container").appendChild(webcam.canvas);
-                statusDiv.innerText = "Monitorando bueiro...";
-            } catch (e) {
-                statusDiv.innerText = "Erro ao acessar câmera: " + e.name;
+                loopPredict();
+            } catch (err) {
+                console.error(err);
+                statusDiv.innerText = "Erro: " + (err.message || err.name);
+                btn.style.display = "block";
+                btn.innerText = "TENTAR NOVAMENTE";
             }
         }
 
-        async function loop() {
-            webcam.update();
-            await predict();
-            window.requestAnimationFrame(loop);
-        }
+        async function loopPredict() {
+            if (model && videoElement && videoElement.readyState === 4) {
+                const prediction = await model.predict(videoElement);
+                let maiorProb = 0;
+                let melhorClasse = "";
 
-        async function predict() {
-            const prediction = await model.predict(webcam.canvas);
-            const statusDiv = document.getElementById("status");
-            let maiorProb = 0;
-            let classe = "";
+                for (let i = 0; i < prediction.length; i++) {
+                    if (prediction[i].probability > maiorProb) {
+                        maiorProb = prediction[i].probability;
+                        melhorClasse = prediction[i].className;
+                    }
+                }
 
-            for (let i = 0; i < maxPredictions; i++) {
-                if (prediction[i].probability > maiorProb) {
-                    maiorProb = prediction[i].probability;
-                    classe = prediction[i].className;
+                const pct = (maiorProb * 100).toFixed(0);
+                const statusDiv = document.getElementById("status");
+
+                if (melhorClasse.toLowerCase().includes("lixo") && maiorProb > 0.70) {
+                    statusDiv.className = "alerta-lixo";
+                    statusDiv.innerText = `🚨 LIXO DETECTADO (${pct}%)`;
+                } else if (melhorClasse.toLowerCase().includes("limpo") && maiorProb > 0.70) {
+                    statusDiv.className = "alerta-limpo";
+                    statusDiv.innerText = `✅ BUEIRO LIMPO (${pct}%)`;
+                } else {
+                    statusDiv.className = "";
+                    statusDiv.innerText = `${melhorClasse} (${pct}%)`;
                 }
             }
-
-            const pct = (maiorProb * 100).toFixed(0);
-            if (classe.toLowerCase().includes("lixo") && maiorProb > 0.70) {
-                statusDiv.className = "alerta-lixo";
-                statusDiv.innerText = `🚨 LIXO DETECTADO (${pct}%)`;
-            } else if (classe.toLowerCase().includes("limpo") && maiorProb > 0.70) {
-                statusDiv.className = "alerta-limpo";
-                statusDiv.innerText = `✅ BUEIRO LIMPO (${pct}%)`;
-            } else {
-                statusDiv.className = "";
-                statusDiv.innerText = `${classe} (${pct}%)`;
-            }
+            requestAnimationFrame(loopPredict);
         }
-
-        init();
     </script>
 </body>
 
