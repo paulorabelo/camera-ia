@@ -158,7 +158,7 @@
             videoElement = document.getElementById("webcam");
 
             btn.style.display = "none";
-            statusDiv.innerText = "A solicitar permissão da câmera...";
+            statusDiv.innerText = "Solicitando permissão da câmera...";
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
@@ -169,12 +169,12 @@
                 videoElement.srcObject = stream;
                 await videoElement.play();
 
-                statusDiv.innerText = "A carregar modelo de IA...";
+                statusDiv.innerText = "Carregando modelo de IA...";
                 const modelURL = URL_MODELO + "model.json";
                 const metadataURL = URL_MODELO + "metadata.json";
 
                 model = await tmImage.load(modelURL, metadataURL);
-                statusDiv.innerText = "IA Pronta. A monitorizar...";
+                statusDiv.innerText = "IA Pronta. Monitorando...";
                 document.getElementById("btn-dispatch").style.display = "block";
 
                 loopPredict();
@@ -227,7 +227,7 @@
         async function enviarParaCentral(local, ocorrencia) {
             const statusDiv = document.getElementById("status");
             const textoAnterior = statusDiv.innerText;
-            statusDiv.innerText = "A enviar alerta para a Central...";
+            statusDiv.innerText = "Enviando alerta para a Central...";
 
             try {
                 await fetch(WEBHOOK_APPS_SCRIPT, {
