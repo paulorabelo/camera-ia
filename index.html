@@ -124,16 +124,16 @@
 
     <div class="card">
         <h2>CÂMERA INTELIGENTE #01</h2>
-        <p>Aponte a câmara traseira para o bueiro da maquete</p>
+        <p>Aponte a câmera traseira para o bueiro da maquete</p>
 
         <div id="video-container">
             <video id="webcam" autoplay playsinline muted></video>
         </div>
 
-        <div id="status">Toque no botão abaixo para ligar a câmara</div>
+        <div id="status">Toque no botão abaixo para ligar a câmera</div>
 
         <button id="btn-start" class="btn-action btn-start" onclick="iniciarSistema()">
-            LIGAR CÂMARA DE INSPEÇÃO
+            LIGAR câmera DE INSPEÇÃO
         </button>
 
         <button id="btn-dispatch" class="btn-action btn-dispatch" onclick="dispararAlertaManual()">
@@ -142,6 +142,7 @@
     </div>
 
     <script>
+        // Link do modelo do Teachable Machine:
         const URL_MODELO = "https://teachablemachine.withgoogle.com/models/1ncfocFIl/";
 
         // Substitua pelo link de execução da sua Web App do Apps Script:
@@ -157,7 +158,7 @@
             videoElement = document.getElementById("webcam");
 
             btn.style.display = "none";
-            statusDiv.innerText = "A solicitar permissão da câmara...";
+            statusDiv.innerText = "A solicitar permissão da câmera...";
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
