@@ -60,7 +60,6 @@
             align-items: center;
             justify-content: center;
             border: 2px solid #334155;
-            position: relative;
         }
 
         video {
@@ -91,17 +90,32 @@
             border: 1px solid #22c55e;
         }
 
-        .btn-start {
-            margin-top: 14px;
+        .btn-action {
+            margin-top: 12px;
             width: 100%;
             padding: 14px;
-            background: #0284c7;
-            color: #ffffff;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: bold;
             border: none;
             border-radius: 8px;
             cursor: pointer;
+        }
+
+        .btn-start {
+            background: #0284c7;
+            color: #ffffff;
+        }
+
+        .btn-dispatch {
+            background: #ef4444;
+            color: #ffffff;
+            display: none;
+        }
+
+        .btn-dispatch:disabled {
+            background: #475569;
+            color: #94a3b8;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -110,22 +124,32 @@
 
     <div class="card">
         <h2>CÂMERA INTELIGENTE #01</h2>
-        <p>Aponte a câmera traseira para o bueiro da maquete</p>
+        <p>Aponte a câmara traseira para o bueiro da maquete</p>
 
         <div id="video-container">
             <video id="webcam" autoplay playsinline muted></video>
         </div>
 
-        <div id="status">Toque no botão abaixo para ligar a câmera</div>
+        <div id="status">Toque no botão abaixo para ligar a câmara</div>
 
-        <button id="btn-start" class="btn-start" onclick="iniciarSistema()">
-            LIGAR CÂMERA DE INSPEÇÃO
+        <button id="btn-start" class="btn-action btn-start" onclick="iniciarSistema()">
+            LIGAR CÂMARA DE INSPEÇÃO
+        </button>
+
+        <button id="btn-dispatch" class="btn-action btn-dispatch" onclick="dispararAlertaManual()">
+            DISPARAR ALERTA MANUAL
         </button>
     </div>
 
     <script>
         const URL_MODELO = "https://teachablemachine.withgoogle.com/models/1ncfocFIl/";
+
+        // Substitua pelo link de execução da sua Web App do Apps Script:
+        const WEBHOOK_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyDIw2kWWaXTh7Od8t7KTk3BTUQxciv3rDUpJHp78zICILxY_tGdOs3VM4I8JZ16Dk6/exec";
+
         let model, videoElement;
+        let ultimoEnvio = 0;
+        let classeAtual = "";
 
         async function iniciarSistema() {
             const btn = document.getElementById("btn-start");
@@ -133,10 +157,9 @@
             videoElement = document.getElementById("webcam");
 
             btn.style.display = "none";
-            statusDiv.innerText = "Solicitando permissão da câmera...";
+            statusDiv.innerText = "A solicitar permissão da câmara...";
 
             try {
-                // Força câmera traseira com fallback automático
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: { ideal: "environment" } },
                     audio: false
@@ -145,12 +168,13 @@
                 videoElement.srcObject = stream;
                 await videoElement.play();
 
-                statusDiv.innerText = "Carregando inteligência artificial...";
+                statusDiv.innerText = "A carregar modelo de IA...";
                 const modelURL = URL_MODELO + "model.json";
                 const metadataURL = URL_MODELO + "metadata.json";
 
                 model = await tmImage.load(modelURL, metadataURL);
-                statusDiv.innerText = "IA Pronta. Monitorando...";
+                statusDiv.innerText = "IA Pronta. A monitorizar...";
+                document.getElementById("btn-dispatch").style.display = "block";
 
                 loopPredict();
             } catch (err) {
@@ -174,12 +198,20 @@
                     }
                 }
 
+                classeAtual = melhorClasse;
                 const pct = (maiorProb * 100).toFixed(0);
                 const statusDiv = document.getElementById("status");
 
-                if (melhorClasse.toLowerCase().includes("lixo") && maiorProb > 0.70) {
+                if (melhorClasse.toLowerCase().includes("lixo") && maiorProb > 0.80) {
                     statusDiv.className = "alerta-lixo";
-                    statusDiv.innerText = `🚨 LIXO DETECTADO (${pct}%)`;
+                    statusDiv.innerText = `🚨 LIXO DETETADO (${pct}%)`;
+
+                    // Disparo automático com intervalo de 20 segundos
+                    const agora = Date.now();
+                    if (agora - ultimoEnvio > 20000) {
+                        ultimoEnvio = agora;
+                        enviarParaCentral("Bueiro Rua das Flores", "Lixo no Bueiro");
+                    }
                 } else if (melhorClasse.toLowerCase().includes("limpo") && maiorProb > 0.70) {
                     statusDiv.className = "alerta-limpo";
                     statusDiv.innerText = `✅ BUEIRO LIMPO (${pct}%)`;
@@ -189,6 +221,32 @@
                 }
             }
             requestAnimationFrame(loopPredict);
+        }
+
+        async function enviarParaCentral(local, ocorrencia) {
+            const statusDiv = document.getElementById("status");
+            const textoAnterior = statusDiv.innerText;
+            statusDiv.innerText = "A enviar alerta para a Central...";
+
+            try {
+                await fetch(WEBHOOK_APPS_SCRIPT, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        local: local,
+                        ocorrencia: ocorrencia
+                    })
+                });
+                statusDiv.innerText = "🚨 ALERTA REGISTADO NA CENTRAL!";
+                setTimeout(() => { statusDiv.innerText = textoAnterior; }, 3000);
+            } catch (err) {
+                console.error("Erro no envio:", err);
+            }
+        }
+
+        function dispararAlertaManual() {
+            enviarParaCentral("Bueiro Rua das Flores", classeAtual || "Lixo no Bueiro");
         }
     </script>
 </body>
