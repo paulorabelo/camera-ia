@@ -36,6 +36,8 @@
             border-radius: 16px;
             padding: 20px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
         }
 
         h2 {
@@ -70,6 +72,33 @@
             object-fit: cover;
         }
 
+        /* Mira Fotográfica Inteligente */
+        #mira-box {
+            position: absolute;
+            width: 80%;
+            height: 75%;
+            border: 2px dashed rgba(56, 189, 248, 0.4);
+            border-radius: 12px;
+            pointer-events: none;
+            transition: all 0.25s ease;
+        }
+
+        .mira-detectada {
+            border: 3px solid #22c55e !important;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.6), inset 0 0 15px rgba(34, 197, 94, 0.3);
+            animation: pulsoMira 0.8s infinite alternate;
+        }
+
+        @keyframes pulsoMira {
+            from {
+                transform: scale(0.98);
+            }
+
+            to {
+                transform: scale(1.02);
+            }
+        }
+
         #status {
             margin-top: 14px;
             padding: 12px;
@@ -94,9 +123,9 @@
         }
 
         .alerta-analisando {
-            background: rgba(234, 179, 8, 0.2) !important;
-            color: #eab308 !important;
-            border: 1px solid #eab308;
+            background: rgba(34, 197, 94, 0.2) !important;
+            color: #22c55e !important;
+            border: 1px solid #22c55e;
         }
 
         .btn-action {
@@ -108,6 +137,11 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .btn-action:active {
+            transform: scale(0.98);
         }
 
         .btn-start {
@@ -120,6 +154,157 @@
             color: #ffffff;
             display: none;
         }
+
+        /* Container da Tela de Sucesso */
+        #tela-sucesso {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #161f30;
+            padding: 12px 0;
+            animation: fadeIn 0.4s ease forwards;
+            position: relative;
+        }
+
+        /* Aura Luminosa Ciano + Esmeralda e Levitação */
+        .robo-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 10px 0 16px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            /* Gradiente radial combinando Azul-Ciano e Esmeralda */
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.35) 0%, rgba(16, 185, 129, 0.25) 45%, rgba(11, 15, 25, 0) 70%);
+            box-shadow: 0 0 35px rgba(56, 189, 248, 0.4), inset 0 0 20px rgba(16, 185, 129, 0.3);
+            animation: flutuarSuave 2.8s ease-in-out infinite, pulsoAura 3s ease-in-out infinite alternate;
+        }
+
+        .robo-img {
+            max-width: 125px;
+            max-height: 125px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.6)) drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));
+        }
+
+        /* Animação de Levitação Suave */
+        @keyframes flutuarSuave {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Animação da Aura de Luz */
+        @keyframes pulsoAura {
+            0% {
+                box-shadow: 0 0 25px rgba(56, 189, 248, 0.3), inset 0 0 15px rgba(16, 185, 129, 0.2);
+            }
+
+            100% {
+                box-shadow: 0 0 45px rgba(16, 185, 129, 0.5), inset 0 0 25px rgba(56, 189, 248, 0.4);
+            }
+        }
+
+        /* Balão de Diálogo Holográfico */
+        .balao-holografico {
+            position: relative;
+            background: rgba(15, 23, 42, 0.88);
+            border: 1.5px solid #38bdf8;
+            border-radius: 14px;
+            padding: 12px 16px;
+            max-width: 320px;
+            margin-bottom: 14px;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.35), inset 0 0 12px rgba(16, 185, 129, 0.2);
+            backdrop-filter: blur(8px);
+            animation: popBalao 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Setinha do Balão Holográfico */
+        .balao-holografico::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+            width: 14px;
+            height: 14px;
+            background: #0f172a;
+            border-right: 1.5px solid #38bdf8;
+            border-bottom: 1.5px solid #38bdf8;
+        }
+
+        @keyframes popBalao {
+            0% {
+                opacity: 0;
+                transform: scale(0.85) translateY(10px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .balao-texto {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            line-height: 1.4;
+            text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+        }
+
+        .balao-tag {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #10b981;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .msg-sucesso {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #22c55e;
+            line-height: 1.35;
+            margin-bottom: 8px;
+        }
+
+        .msg-sub {
+            font-size: 0.88rem;
+            color: #cbd5e1;
+            margin-bottom: 14px;
+        }
+
+        .contador-trava {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            background: #0b0f19;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            border: 1px solid #26354a;
+            display: inline-block;
+        }
+
+        #btn-nova-inspecao {
+            display: none;
+            background: #0284c7;
+            color: #ffffff;
+            margin-top: 14px;
+        }
     </style>
 </head>
 
@@ -129,8 +314,34 @@
         <h2 id="titulo-camera">CÂMERA INTELIGENTE</h2>
         <p id="subtitulo-local">Aponte a câmera traseira para a maquete</p>
 
+        <!-- Área de Captura de Vídeo -->
         <div id="video-container">
             <video id="webcam" autoplay playsinline muted></video>
+            <div id="mira-box"></div>
+        </div>
+
+        <!-- Tela de Congratulações com o Robô -->
+        <!-- Tela de Congratulações com Mascote e Balão Holográfico -->
+        <div id="tela-sucesso">
+            <!-- Balão Holográfico Animado -->
+            <div class="balao-holografico">
+                <div class="balao-tag">
+                    <span>● TRANSMISSÃO VIA RÁDIO 156</span>
+                </div>
+                <div class="balao-texto">
+                    "Câmbio central! Alerta transmitido com sucesso. Olhe o telão da <strong>Sala de Situação</strong>!"
+                </div>
+            </div>
+
+            <!-- Mascote com Levitação e Aura Neon Ciano/Esmeralda -->
+            <div class="robo-container">
+                <img src="robo.png" alt="Robô Agente IA" class="robo-img" onerror="this.style.display='none'">
+            </div>
+
+            <div id="contador-segundos" class="contador-trava">Próxima leitura em 7s...</div>
+            <button id="btn-nova-inspecao" class="btn-action" onclick="reiniciarInspecao()">
+                INICIAR NOVA INSPEÇÃO
+            </button>
         </div>
 
         <div id="status">Toque no botão abaixo para ligar a câmera</div>
@@ -154,9 +365,10 @@
         let model, videoElement;
         let ultimoEnvio = 0;
         let classeAtual = "";
+        let sistemaBloqueado = false;
 
-        let tempoInicioDeteccaoLixo = 0;
-        const TEMPO_MINIMO_ESTABILIZACAO_MS = 2000;
+        let tempoInicioDeteccao = 0;
+        const TEMPO_MINIMO_ESTABILIZACAO_MS = 800; // Resposta rápida (800 ms)
 
         document.getElementById("titulo-camera").innerText = LOCAL_MONITORADO;
 
@@ -177,12 +389,12 @@
                 videoElement.srcObject = stream;
                 await videoElement.play();
 
-                statusDiv.innerText = "Carregando modelo de IA...";
+                statusDiv.innerText = "Carregando inteligência artificial...";
                 const modelURL = URL_MODELO + "model.json";
                 const metadataURL = URL_MODELO + "metadata.json";
 
                 model = await tmImage.load(modelURL, metadataURL);
-                statusDiv.innerText = "IA Pronta. Monitorando...";
+                statusDiv.innerText = "IA Pronta. Aponte para o ponto urbano...";
                 document.getElementById("btn-dispatch").style.display = "block";
 
                 loopPredict();
@@ -195,6 +407,8 @@
         }
 
         async function loopPredict() {
+            if (sistemaBloqueado) return;
+
             if (model && videoElement && videoElement.readyState === 4) {
                 const prediction = await model.predict(videoElement);
                 let maiorProb = 0;
@@ -210,63 +424,61 @@
                 classeAtual = melhorClasse;
                 const pct = (maiorProb * 100).toFixed(0);
                 const statusDiv = document.getElementById("status");
+                const miraBox = document.getElementById("mira-box");
                 const agora = Date.now();
 
-                // 1. FILTRO DE CLASSE NEUTRA
+                // 1. NEUTRO: Ambiente estável
                 if (melhorClasse.toLowerCase().includes("neutro") || melhorClasse.toLowerCase().includes("ambiente")) {
-                    tempoInicioDeteccaoLixo = 0;
+                    tempoInicioDeteccao = 0;
+                    miraBox.classList.remove("mira-detectada");
                     statusDiv.className = "";
                     statusDiv.innerText = `👀 Monitorando Ambiente (${pct}%)`;
                 }
-                // 2. DETECÇÃO DE LIXEIRA CHEIA
-                else if (melhorClasse === "Lixeira Cheia" && maiorProb > 0.85) {
-                    if (tempoInicioDeteccaoLixo === 0) tempoInicioDeteccaoLixo = agora;
-                    let tempoDecorrido = agora - tempoInicioDeteccaoLixo;
+                // 2. PROBLEMA: Lixeira Cheia
+                else if (melhorClasse === "Lixeira Cheia" && maiorProb > 0.80) {
+                    miraBox.classList.add("mira-detectada");
+                    if (tempoInicioDeteccao === 0) tempoInicioDeteccao = agora;
+                    let decorrido = agora - tempoInicioDeteccao;
 
-                    if (tempoDecorrido >= TEMPO_MINIMO_ESTABILIZACAO_MS) {
+                    if (decorrido >= TEMPO_MINIMO_ESTABILIZACAO_MS) {
                         statusDiv.className = "alerta-lixo";
                         statusDiv.innerText = `🚨 LIXEIRA CHEIA CONFIRMADA (${pct}%)`;
-
-                        if (agora - ultimoEnvio > 20000) {
-                            ultimoEnvio = agora;
-                            enviarParaCentral(LOCAL_MONITORADO, "Lixeira Cheia");
-                        }
+                        dispararFluxoSucesso(LOCAL_MONITORADO, "Lixeira Cheia");
+                        return;
                     } else {
                         statusDiv.className = "alerta-analisando";
-                        statusDiv.innerText = `⚠️ Analisando resíduos na lixeira... (${pct}%)`;
+                        statusDiv.innerText = `Alvo Detectado: Lixeira Cheia (${pct}%)`;
                     }
                 }
-                // 3. DETECÇÃO DE LIXO NO BUEIRO
-                else if (melhorClasse === "Lixo no Bueiro" && maiorProb > 0.85) {
-                    if (tempoInicioDeteccaoLixo === 0) tempoInicioDeteccaoLixo = agora;
-                    let tempoDecorrido = agora - tempoInicioDeteccaoLixo;
+                // 3. PROBLEMA: Lixo no Bueiro
+                else if (melhorClasse === "Lixo no Bueiro" && maiorProb > 0.80) {
+                    miraBox.classList.add("mira-detectada");
+                    if (tempoInicioDeteccao === 0) tempoInicioDeteccao = agora;
+                    let decorrido = agora - tempoInicioDeteccao;
 
-                    if (tempoDecorrido >= TEMPO_MINIMO_ESTABILIZACAO_MS) {
+                    if (decorrido >= TEMPO_MINIMO_ESTABILIZACAO_MS) {
                         statusDiv.className = "alerta-lixo";
                         statusDiv.innerText = `🚨 LIXO NO BUEIRO CONFIRMADO (${pct}%)`;
-
-                        if (agora - ultimoEnvio > 20000) {
-                            ultimoEnvio = agora;
-                            enviarParaCentral(LOCAL_MONITORADO, "Lixo no Bueiro");
-                        }
+                        dispararFluxoSucesso(LOCAL_MONITORADO, "Lixo no Bueiro");
+                        return;
                     } else {
                         statusDiv.className = "alerta-analisando";
-                        statusDiv.innerText = `⚠️ Analisando resíduos no bueiro... (${pct}%)`;
+                        statusDiv.innerText = `Alvo Detectado: Lixo no Bueiro (${pct}%)`;
                     }
                 }
-                // 4. ESTADOS LIMPOS
-                else if (melhorClasse.toLowerCase().includes("limp") && maiorProb > 0.80) {
-                    tempoInicioDeteccaoLixo = 0;
+                // 4. REGULAR: Ponto Limpo
+                else if (melhorClasse.toLowerCase().includes("limp") && maiorProb > 0.78) {
+                    tempoInicioDeteccao = 0;
+                    miraBox.classList.remove("mira-detectada");
                     statusDiv.className = "alerta-limpo";
-                    if (melhorClasse.toLowerCase().includes("lixeira")) {
-                        statusDiv.innerText = `✅ LIXEIRA LIMPA E VAZIA (${pct}%)`;
-                    } else {
-                        statusDiv.innerText = `✅ BUEIRO LIMPO (${pct}%)`;
-                    }
+                    statusDiv.innerText = melhorClasse.includes("Lixeira")
+                        ? `✅ LIXEIRA VAZIA E LIMPA (${pct}%)`
+                        : `✅ BUEIRO LIMPO (${pct}%)`;
                 }
-                // 5. OUTROS ESTADOS
+                // 5. TRANSIÇÃO
                 else {
-                    tempoInicioDeteccaoLixo = 0;
+                    tempoInicioDeteccao = 0;
+                    miraBox.classList.remove("mira-detectada");
                     statusDiv.className = "";
                     statusDiv.innerText = `${melhorClasse} (${pct}%)`;
                 }
@@ -275,36 +487,76 @@
         }
 
         async function enviarParaCentral(local, ocorrencia) {
-            const statusDiv = document.getElementById("status");
-            statusDiv.innerText = "Enviando alerta para a Central...";
-
             try {
                 await fetch(WEBHOOK_APPS_SCRIPT, {
                     method: "POST",
                     mode: "no-cors",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        local: local,
-                        ocorrencia: ocorrencia
-                    })
+                    body: JSON.stringify({ local: local, ocorrencia: ocorrencia })
                 });
-                statusDiv.innerText = "🚨 OCORRÊNCIA REGISTRADA NA SALA DE SITUAÇÃO!";
-                setTimeout(() => { tempoInicioDeteccaoLixo = 0; }, 3000);
             } catch (err) {
                 console.error("Erro no envio:", err);
             }
         }
 
+        function dispararFluxoSucesso(local, ocorrencia) {
+            sistemaBloqueado = true;
+
+            // Envia para o Sheets em segundo plano
+            enviarParaCentral(local, ocorrencia);
+
+            // Esconde vídeo e botões da câmera
+            document.getElementById("video-container").style.display = "none";
+            document.getElementById("status").style.display = "none";
+            document.getElementById("btn-dispatch").style.display = "none";
+
+            // Mostra tela de comemoração com o mascote
+            const telaSucesso = document.getElementById("tela-sucesso");
+            telaSucesso.style.display = "flex";
+
+            const contadorEl = document.getElementById("contador-segundos");
+            const btnReiniciar = document.getElementById("btn-nova-inspecao");
+            btnReiniciar.style.display = "none";
+
+            let restantes = 7;
+            contadorEl.innerText = `Próxima leitura liberada em ${restantes}s...`;
+
+            const intervalo = setInterval(() => {
+                restantes--;
+                if (restantes > 0) {
+                    contadorEl.innerText = `Próxima leitura liberada em ${restantes}s...`;
+                } else {
+                    clearInterval(intervalo);
+                    contadorEl.innerText = "Inspeção concluída com sucesso!";
+                    btnReiniciar.style.display = "block";
+                }
+            }, 1000);
+        }
+
+        function reiniciarInspecao() {
+            tempoInicioDeteccao = 0;
+            sistemaBloqueado = false;
+
+            document.getElementById("tela-sucesso").style.display = "none";
+            document.getElementById("video-container").style.display = "flex";
+            document.getElementById("status").style.display = "block";
+            document.getElementById("status").className = "";
+            document.getElementById("status").innerText = "IA Pronta. Aponte para o ponto urbano...";
+            document.getElementById("btn-dispatch").style.display = "block";
+
+            loopPredict();
+        }
+
         function dispararAlertaManual() {
             if (!classeAtual || classeAtual.toLowerCase().includes("neutro")) {
-                alert("Aponte a câmera para um bueiro ou lixeira antes de disparar o alerta!");
+                alert("Aponte a câmera para o bueiro ou lixeira antes de enviar!");
                 return;
             }
             const ocorrenciaEnvio = (classeAtual === "Lixeira Cheia" || LOCAL_MONITORADO.includes("Lixeira"))
                 ? "Lixeira Cheia"
                 : "Lixo no Bueiro";
 
-            enviarParaCentral(LOCAL_MONITORADO, ocorrenciaEnvio);
+            dispararFluxoSucesso(LOCAL_MONITORADO, ocorrenciaEnvio);
         }
     </script>
 </body>
