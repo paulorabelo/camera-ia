@@ -145,13 +145,9 @@
     </div>
 
     <script>
-        // Se você retreinar adicionando a classe "Neutro", atualize este link:
         const URL_MODELO = "https://teachablemachine.withgoogle.com/models/1ncfocFIl/";
-
-        // Link da Web App do Apps Script (terminado em /exec):
         const WEBHOOK_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyDIw2kWWaXTh7Od8t7KTk3BTUQxciv3rDUpJHp78zICILxY_tGdOs3VM4I8JZ16Dk6/exec";
 
-        // Captura o local via URL (ex: ?local=Bueiro - Rua Yporã) ou usa o padrão
         const urlParams = new URLSearchParams(window.location.search);
         const LOCAL_MONITORADO = urlParams.get('local') || "Bueiro - Rua dos Cambucizeiros";
 
@@ -159,11 +155,9 @@
         let ultimoEnvio = 0;
         let classeAtual = "";
 
-        // Controle de estabilização (Debounce)
         let tempoInicioDeteccaoLixo = 0;
-        const TEMPO_MINIMO_ESTABILIZACAO_MS = 2000; // 2 segundos estáveis para disparar
+        const TEMPO_MINIMO_ESTABILIZACAO_MS = 2000;
 
-        // Atualiza cabeçalho com o local
         document.getElementById("titulo-camera").innerText = LOCAL_MONITORADO;
 
         async function iniciarSistema() {
@@ -243,7 +237,7 @@
                     }
                 }
                 // 3. DETECÇÃO DE LIXO NO BUEIRO
-                else if (melhorClasse.toLowerCase().includes("lixo") && maiorProb > 0.85) {
+                else if (melhorClasse === "Lixo no Bueiro" && maiorProb > 0.85) {
                     if (tempoInicioDeteccaoLixo === 0) tempoInicioDeteccaoLixo = agora;
                     let tempoDecorrido = agora - tempoInicioDeteccaoLixo;
 
@@ -264,7 +258,17 @@
                 else if (melhorClasse.toLowerCase().includes("limp") && maiorProb > 0.80) {
                     tempoInicioDeteccaoLixo = 0;
                     statusDiv.className = "alerta-limpo";
-                    statusDiv.innerText = `✅ LOCAL LIMPO E REGULAR (${pct}%)`;
+                    if (melhorClasse.toLowerCase().includes("lixeira")) {
+                        statusDiv.innerText = `✅ LIXEIRA LIMPA E VAZIA (${pct}%)`;
+                    } else {
+                        statusDiv.innerText = `✅ BUEIRO LIMPO (${pct}%)`;
+                    }
+                }
+                // 5. OUTROS ESTADOS
+                else {
+                    tempoInicioDeteccaoLixo = 0;
+                    statusDiv.className = "";
+                    statusDiv.innerText = `${melhorClasse} (${pct}%)`;
                 }
             }
             requestAnimationFrame(loopPredict);
@@ -293,10 +297,13 @@
 
         function dispararAlertaManual() {
             if (!classeAtual || classeAtual.toLowerCase().includes("neutro")) {
-                alert("Aponte a câmera para o bueiro ou lixeira antes de enviar um alerta!");
+                alert("Aponte a câmera para um bueiro ou lixeira antes de disparar o alerta!");
                 return;
             }
-            const ocorrenciaEnvio = classeAtual.includes("Lixeira") ? "Lixeira Cheia" : "Lixo no Bueiro";
+            const ocorrenciaEnvio = (classeAtual === "Lixeira Cheia" || LOCAL_MONITORADO.includes("Lixeira"))
+                ? "Lixeira Cheia"
+                : "Lixo no Bueiro";
+
             enviarParaCentral(LOCAL_MONITORADO, ocorrenciaEnvio);
         }
     </script>
