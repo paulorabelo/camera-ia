@@ -203,6 +203,33 @@
             }
         }
 
+        /* Animação do Robô SVG */
+        .robo-svg {
+            filter: drop-shadow(0 0 14px rgba(56, 189, 248, 0.45));
+            transition: transform 0.3s ease;
+        }
+
+        /* O olhinho esquerdo dá uma piscadela extra suave */
+        @keyframes piscarOlho {
+
+            0%,
+            90%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            95% {
+                transform: scaleY(0.1);
+                opacity: 0.6;
+            }
+        }
+
+        .olho-piscando {
+            transform-origin: center;
+            animation: piscarOlho 3.5s infinite;
+        }
+
         /* Animação da Aura de Luz */
         @keyframes pulsoAura {
             0% {
