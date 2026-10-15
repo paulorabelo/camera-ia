@@ -89,6 +89,11 @@
             animation: pulsoMira 0.8s infinite alternate;
         }
 
+        .mira-orientacao {
+            border: 3px solid #f59e0b !important;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.6), inset 0 0 15px rgba(245, 158, 11, 0.3);
+        }
+
         @keyframes pulsoMira {
             from {
                 transform: scale(0.98);
@@ -128,6 +133,12 @@
             border: 1px solid #22c55e;
         }
 
+        .alerta-aviso {
+            background: rgba(245, 158, 11, 0.25) !important;
+            color: #f59e0b !important;
+            border: 1px solid #f59e0b;
+        }
+
         .btn-action {
             margin-top: 12px;
             width: 100%;
@@ -155,8 +166,9 @@
             display: none;
         }
 
-        /* Container da Tela de Sucesso */
-        #tela-sucesso {
+        /* Telas de Transição (Sucesso e Orientação) */
+        #tela-sucesso,
+        #tela-orientacao {
             display: none;
             flex-direction: column;
             align-items: center;
@@ -167,30 +179,112 @@
             position: relative;
         }
 
-        /* Aura Luminosa Ciano + Esmeralda e Levitação */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Balão de Diálogo Holográfico */
+        .balao-holografico {
+            position: relative;
+            background: rgba(15, 23, 42, 0.92);
+            border: 1.5px solid #38bdf8;
+            border-radius: 14px;
+            padding: 12px 16px;
+            max-width: 330px;
+            margin-bottom: 14px;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.35), inset 0 0 12px rgba(16, 185, 129, 0.2);
+            backdrop-filter: blur(8px);
+            animation: popBalao 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .balao-alerta {
+            border-color: #f59e0b !important;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.35), inset 0 0 12px rgba(245, 158, 11, 0.15) !important;
+        }
+
+        .balao-holografico::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+            width: 14px;
+            height: 14px;
+            background: #0f172a;
+            border-right: 1.5px solid #38bdf8;
+            border-bottom: 1.5px solid #38bdf8;
+        }
+
+        .balao-alerta::after {
+            border-right-color: #f59e0b !important;
+            border-bottom-color: #f59e0b !important;
+        }
+
+        @keyframes popBalao {
+            0% {
+                opacity: 0;
+                transform: scale(0.85) translateY(10px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .balao-texto {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            line-height: 1.4;
+            text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+        }
+
+        .balao-tag {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #10b981;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .tag-alerta {
+            color: #f59e0b !important;
+        }
+
+        /* Aura e Levitação do Robô */
         .robo-container {
             position: relative;
-            width: 150px;
-            height: 150px;
-            margin: 10px 0 16px 0;
+            width: 145px;
+            height: 145px;
+            margin: 8px 0 14px 0;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            /* Gradiente radial combinando Azul-Ciano e Esmeralda */
             background: radial-gradient(circle, rgba(56, 189, 248, 0.35) 0%, rgba(16, 185, 129, 0.25) 45%, rgba(11, 15, 25, 0) 70%);
             box-shadow: 0 0 35px rgba(56, 189, 248, 0.4), inset 0 0 20px rgba(16, 185, 129, 0.3);
             animation: flutuarSuave 2.8s ease-in-out infinite, pulsoAura 3s ease-in-out infinite alternate;
         }
 
-        .robo-img {
-            max-width: 125px;
-            max-height: 125px;
-            object-fit: contain;
-            filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.6)) drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));
+        .robo-alerta {
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.35) 0%, rgba(239, 68, 68, 0.2) 45%, rgba(11, 15, 25, 0) 70%) !important;
+            box-shadow: 0 0 35px rgba(245, 158, 11, 0.4), inset 0 0 20px rgba(239, 68, 68, 0.25) !important;
         }
 
-        /* Animação de Levitação Suave */
         @keyframes flutuarSuave {
 
             0%,
@@ -199,17 +293,24 @@
             }
 
             50% {
-                transform: translateY(-10px);
+                transform: translateY(-8px);
             }
         }
 
-        /* Animação do Robô SVG */
-        .robo-svg {
-            filter: drop-shadow(0 0 14px rgba(56, 189, 248, 0.45));
-            transition: transform 0.3s ease;
+        @keyframes pulsoAura {
+            0% {
+                box-shadow: 0 0 25px rgba(56, 189, 248, 0.3), inset 0 0 15px rgba(16, 185, 129, 0.2);
+            }
+
+            100% {
+                box-shadow: 0 0 45px rgba(16, 185, 129, 0.5), inset 0 0 25px rgba(56, 189, 248, 0.4);
+            }
         }
 
-        /* O olhinho esquerdo dá uma piscadela extra suave */
+        .robo-svg {
+            filter: drop-shadow(0 0 14px rgba(56, 189, 248, 0.45));
+        }
+
         @keyframes piscarOlho {
 
             0%,
@@ -230,94 +331,8 @@
             animation: piscarOlho 3.5s infinite;
         }
 
-        /* Animação da Aura de Luz */
-        @keyframes pulsoAura {
-            0% {
-                box-shadow: 0 0 25px rgba(56, 189, 248, 0.3), inset 0 0 15px rgba(16, 185, 129, 0.2);
-            }
-
-            100% {
-                box-shadow: 0 0 45px rgba(16, 185, 129, 0.5), inset 0 0 25px rgba(56, 189, 248, 0.4);
-            }
-        }
-
-        /* Balão de Diálogo Holográfico */
-        .balao-holografico {
-            position: relative;
-            background: rgba(15, 23, 42, 0.88);
-            border: 1.5px solid #38bdf8;
-            border-radius: 14px;
-            padding: 12px 16px;
-            max-width: 320px;
-            margin-bottom: 14px;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.35), inset 0 0 12px rgba(16, 185, 129, 0.2);
-            backdrop-filter: blur(8px);
-            animation: popBalao 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-
-        /* Setinha do Balão Holográfico */
-        .balao-holografico::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%) rotate(45deg);
-            width: 14px;
-            height: 14px;
-            background: #0f172a;
-            border-right: 1.5px solid #38bdf8;
-            border-bottom: 1.5px solid #38bdf8;
-        }
-
-        @keyframes popBalao {
-            0% {
-                opacity: 0;
-                transform: scale(0.85) translateY(10px);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-
-        .balao-texto {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: #e2e8f0;
-            line-height: 1.4;
-            text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
-        }
-
-        .balao-tag {
-            font-size: 0.72rem;
-            font-weight: 800;
-            color: #10b981;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .msg-sucesso {
-            font-size: 1.05rem;
-            font-weight: 800;
-            color: #22c55e;
-            line-height: 1.35;
-            margin-bottom: 8px;
-        }
-
-        .msg-sub {
-            font-size: 0.88rem;
-            color: #cbd5e1;
-            margin-bottom: 14px;
-        }
-
         .contador-trava {
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             color: #94a3b8;
             background: #0b0f19;
             padding: 6px 14px;
@@ -326,11 +341,19 @@
             display: inline-block;
         }
 
-        #btn-nova-inspecao {
+        #btn-nova-inspecao,
+        #btn-entendido {
             display: none;
             background: #0284c7;
             color: #ffffff;
             margin-top: 14px;
+        }
+
+        #btn-entendido {
+            display: block;
+            background: #f59e0b;
+            color: #0b0f19;
+            font-weight: 800;
         }
     </style>
 </head>
@@ -341,16 +364,14 @@
         <h2 id="titulo-camera">CÂMERA INTELIGENTE</h2>
         <p id="subtitulo-local">Aponte a câmera traseira para a maquete</p>
 
-        <!-- Área de Captura de Vídeo -->
+        <!-- Visor da Câmera -->
         <div id="video-container">
             <video id="webcam" autoplay playsinline muted></video>
             <div id="mira-box"></div>
         </div>
 
-        <!-- Tela de Congratulações com o Robô -->
-        <!-- Tela de Congratulações com Mascote e Balão Holográfico -->
+        <!-- Tela de Sucesso (Alerta Enviado) -->
         <div id="tela-sucesso">
-            <!-- Balão Holográfico Animado -->
             <div class="balao-holografico">
                 <div class="balao-tag">
                     <span>● TRANSMISSÃO VIA RÁDIO 156</span>
@@ -360,14 +381,165 @@
                 </div>
             </div>
 
-            <!-- Mascote com Levitação e Aura Neon Ciano/Esmeralda -->
             <div class="robo-container">
-                <img src="robo.png" alt="Robô Agente IA" class="robo-img" onerror="this.style.display='none'">
+                <!-- SVG Mascote Oficial -->
+                <svg class="robo-svg" viewBox="0 0 200 240" width="125" height="150" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feMerge>
+                                <feMergeNode in="blur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                        <linearGradient id="body-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#ffffff" />
+                            <stop offset="100%" stop-color="#cbd5e1" />
+                        </linearGradient>
+                        <linearGradient id="detail-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#93c5fd" />
+                            <stop offset="100%" stop-color="#60a5fa" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Antenas -->
+                    <line x1="45" y1="50" x2="25" y2="20" stroke="#cbd5e1" stroke-width="6" stroke-linecap="round" />
+                    <circle cx="23" cy="18" r="8" fill="url(#detail-grad)" />
+
+                    <line x1="155" y1="50" x2="175" y2="20" stroke="#cbd5e1" stroke-width="6" stroke-linecap="round" />
+                    <circle cx="177" cy="18" r="8" fill="url(#detail-grad)" />
+
+                    <!-- Fones Laterais -->
+                    <rect x="18" y="55" width="14" height="40" rx="7" fill="url(#detail-grad)" />
+                    <rect x="168" y="55" width="14" height="40" rx="7" fill="url(#detail-grad)" />
+
+                    <!-- Capacete -->
+                    <rect x="26" y="25" width="148" height="110" rx="46" fill="url(#body-grad)" stroke="#94a3b8"
+                        stroke-width="2" />
+
+                    <!-- Visor Preto -->
+                    <rect x="38" y="37" width="124" height="84" rx="34" fill="#090d16" stroke="#1e293b"
+                        stroke-width="2" />
+
+                    <!-- Olho Esquerdo (Piscando) -->
+                    <path class="olho-piscando" d="M 58 72 L 72 80 L 58 88" fill="none" stroke="#38bdf8"
+                        stroke-width="6" stroke-linecap="round" stroke-linejoin="round" filter="url(#neon-glow)" />
+
+                    <!-- Olho Direito (Aberto) -->
+                    <ellipse cx="130" cy="78" rx="10" ry="14" fill="#38bdf8" filter="url(#neon-glow)" />
+
+                    <!-- Boca Sorridente -->
+                    <path d="M 85 96 Q 100 110 115 96" fill="none" stroke="#38bdf8" stroke-width="5"
+                        stroke-linecap="round" filter="url(#neon-glow)" />
+
+                    <!-- Pernas e Pés -->
+                    <rect x="72" y="195" width="20" height="25" rx="8" fill="url(#body-grad)" />
+                    <rect x="108" y="195" width="20" height="25" rx="8" fill="url(#body-grad)" />
+                    <ellipse cx="82" cy="224" rx="16" ry="8" fill="#94a3b8" />
+                    <ellipse cx="118" cy="224" rx="16" ry="8" fill="#94a3b8" />
+
+                    <!-- Tronco -->
+                    <path d="M 60 135 L 140 135 C 145 165, 135 198, 100 198 C 65 198, 55 165, 60 135 Z"
+                        fill="url(#body-grad)" stroke="#94a3b8" stroke-width="2" />
+                    <rect x="85" y="150" width="30" height="4" rx="2" fill="#38bdf8" filter="url(#neon-glow)" />
+
+                    <!-- Braços -->
+                    <path d="M 138 142 Q 160 160 152 185" fill="none" stroke="url(#body-grad)" stroke-width="14"
+                        stroke-linecap="round" />
+                    <path d="M 62 142 Q 40 155 45 175" fill="none" stroke="url(#body-grad)" stroke-width="14"
+                        stroke-linecap="round" />
+                    <circle cx="48" cy="172" r="10" fill="url(#body-grad)" />
+                    <rect x="42" y="152" width="9" height="18" rx="4" fill="url(#body-grad)" stroke="#94a3b8"
+                        stroke-width="1.5" />
+                </svg>
             </div>
 
-            <div id="contador-segundos" class="contador-trava">Próxima leitura em 7s...</div>
+            <div id="contador-segundos" class="contador-trava">Próxima leitura liberada em 7s...</div>
             <button id="btn-nova-inspecao" class="btn-action" onclick="reiniciarInspecao()">
                 INICIAR NOVA INSPEÇÃO
+            </button>
+        </div>
+
+        <!-- Tela de Orientação (Opção 3: Mascote Orientador) -->
+        <div id="tela-orientacao">
+            <div class="balao-holografico balao-alerta">
+                <div class="balao-tag tag-alerta">
+                    <span>⚠️ AGENTE DE SANEAMENTO INFORMA</span>
+                </div>
+                <div id="texto-orientacao" class="balao-texto">
+                    "Olá! Sou o Robô Agente. Você abriu o código do bueiro, mas está apontando para a lixeira! Vamos
+                    tentar alinhar a câmera?"
+                </div>
+            </div>
+
+            <div class="robo-container robo-alerta">
+                <svg class="robo-svg" viewBox="0 0 200 240" width="125" height="150" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <filter id="neon-glow-alerta" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feMerge>
+                                <feMergeNode in="blur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                        <linearGradient id="body-grad-2" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#ffffff" />
+                            <stop offset="100%" stop-color="#cbd5e1" />
+                        </linearGradient>
+                        <linearGradient id="detail-grad-alerta" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#fde047" />
+                            <stop offset="100%" stop-color="#f59e0b" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Antenas -->
+                    <line x1="45" y1="50" x2="25" y2="20" stroke="#cbd5e1" stroke-width="6" stroke-linecap="round" />
+                    <circle cx="23" cy="18" r="8" fill="url(#detail-grad-alerta)" />
+
+                    <line x1="155" y1="50" x2="175" y2="20" stroke="#cbd5e1" stroke-width="6" stroke-linecap="round" />
+                    <circle cx="177" cy="18" r="8" fill="url(#detail-grad-alerta)" />
+
+                    <!-- Fones Laterais -->
+                    <rect x="18" y="55" width="14" height="40" rx="7" fill="url(#detail-grad-alerta)" />
+                    <rect x="168" y="55" width="14" height="40" rx="7" fill="url(#detail-grad-alerta)" />
+
+                    <!-- Capacete -->
+                    <rect x="26" y="25" width="148" height="110" rx="46" fill="url(#body-grad-2)" stroke="#94a3b8"
+                        stroke-width="2" />
+
+                    <!-- Visor Preto -->
+                    <rect x="38" y="37" width="124" height="84" rx="34" fill="#090d16" stroke="#1e293b"
+                        stroke-width="2" />
+
+                    <!-- Olhos Circulares em tom âmbar de alerta -->
+                    <circle cx="68" cy="78" r="10" fill="#f59e0b" filter="url(#neon-glow-alerta)" />
+                    <circle cx="130" cy="78" r="10" fill="#f59e0b" filter="url(#neon-glow-alerta)" />
+
+                    <!-- Boca em formato 'O' curioso/surpreso -->
+                    <circle cx="99" cy="98" r="6" fill="none" stroke="#f59e0b" stroke-width="4"
+                        filter="url(#neon-glow-alerta)" />
+
+                    <!-- Pernas e Pés -->
+                    <rect x="72" y="195" width="20" height="25" rx="8" fill="url(#body-grad-2)" />
+                    <rect x="108" y="195" width="20" height="25" rx="8" fill="url(#body-grad-2)" />
+                    <ellipse cx="82" cy="224" rx="16" ry="8" fill="#94a3b8" />
+                    <ellipse cx="118" cy="224" rx="16" ry="8" fill="#94a3b8" />
+
+                    <!-- Tronco -->
+                    <path d="M 60 135 L 140 135 C 145 165, 135 198, 100 198 C 65 198, 55 165, 60 135 Z"
+                        fill="url(#body-grad-2)" stroke="#94a3b8" stroke-width="2" />
+                    <rect x="85" y="150" width="30" height="4" rx="2" fill="#f59e0b" filter="url(#neon-glow-alerta)" />
+
+                    <!-- Braços (Gestos de indicação) -->
+                    <path d="M 138 142 Q 165 155 155 175" fill="none" stroke="url(#body-grad-2)" stroke-width="14"
+                        stroke-linecap="round" />
+                    <path d="M 62 142 Q 35 155 45 175" fill="none" stroke="url(#body-grad-2)" stroke-width="14"
+                        stroke-linecap="round" />
+                </svg>
+            </div>
+
+            <button id="btn-entendido" class="btn-action" onclick="reiniciarInspecao()">
+                ENTENDIDO, VOU ALINHAR A CÂMERA!
             </button>
         </div>
 
@@ -390,14 +562,17 @@
         const LOCAL_MONITORADO = urlParams.get('local') || "Bueiro - Rua dos Cambucizeiros";
 
         let model, videoElement;
-        let ultimoEnvio = 0;
         let classeAtual = "";
         let sistemaBloqueado = false;
 
         let tempoInicioDeteccao = 0;
-        const TEMPO_MINIMO_ESTABILIZACAO_MS = 800; // Resposta rápida (800 ms)
+        let tempoInicioDiscrepancia = 0;
+        const TEMPO_MINIMO_ESTABILIZACAO_MS = 800; // 800 ms de estabilização
 
         document.getElementById("titulo-camera").innerText = LOCAL_MONITORADO;
+
+        const ehLocalBueiro = LOCAL_MONITORADO.toLowerCase().includes("bueiro");
+        const ehLocalLixeira = LOCAL_MONITORADO.toLowerCase().includes("lixeira");
 
         async function iniciarSistema() {
             const btn = document.getElementById("btn-start");
@@ -454,16 +629,47 @@
                 const miraBox = document.getElementById("mira-box");
                 const agora = Date.now();
 
-                // 1. NEUTRO: Ambiente estável
+                // 1. CLASSE NEUTRA
                 if (melhorClasse.toLowerCase().includes("neutro") || melhorClasse.toLowerCase().includes("ambiente")) {
                     tempoInicioDeteccao = 0;
-                    miraBox.classList.remove("mira-detectada");
+                    tempoInicioDiscrepancia = 0;
+                    miraBox.className = "";
                     statusDiv.className = "";
                     statusDiv.innerText = `👀 Monitorando Ambiente (${pct}%)`;
                 }
-                // 2. PROBLEMA: Lixeira Cheia
+
+                // 2. DISCREPÂNCIA: Bueiro escaneado, mas apontado para Lixeira
+                else if (ehLocalBueiro && melhorClasse.includes("Lixeira") && maiorProb > 0.80) {
+                    tempoInicioDeteccao = 0;
+                    miraBox.className = "mira-orientacao";
+                    statusDiv.className = "alerta-aviso";
+                    statusDiv.innerText = `⚠️ Lixeira detectada em ponto de Bueiro...`;
+
+                    if (tempoInicioDiscrepancia === 0) tempoInicioDiscrepancia = agora;
+                    if (agora - tempoInicioDiscrepancia >= 1200) {
+                        exibirOrientacaoMascote("Olá! Sou o Robô Agente. Você abriu o código do bueiro, mas está apontando para a lixeira! Vamos tentar alinhar a câmera?");
+                        return;
+                    }
+                }
+
+                // 3. DISCREPÂNCIA: Lixeira escaneada, mas apontada para Bueiro
+                else if (ehLocalLixeira && melhorClasse.includes("Bueiro") && maiorProb > 0.80) {
+                    tempoInicioDeteccao = 0;
+                    miraBox.className = "mira-orientacao";
+                    statusDiv.className = "alerta-aviso";
+                    statusDiv.innerText = `⚠️ Bueiro detectado em ponto de Lixeira...`;
+
+                    if (tempoInicioDiscrepancia === 0) tempoInicioDiscrepancia = agora;
+                    if (agora - tempoInicioDiscrepancia >= 1200) {
+                        exibirOrientacaoMascote("Olá! Sou o Robô Agente. Você abriu o código da praça, mas está apontando para um bueiro! Vamos tentar alinhar a câmera?");
+                        return;
+                    }
+                }
+
+                // 4. DETECÇÃO CORRETA: Lixeira Cheia
                 else if (melhorClasse === "Lixeira Cheia" && maiorProb > 0.80) {
-                    miraBox.classList.add("mira-detectada");
+                    tempoInicioDiscrepancia = 0;
+                    miraBox.className = "mira-detectada";
                     if (tempoInicioDeteccao === 0) tempoInicioDeteccao = agora;
                     let decorrido = agora - tempoInicioDeteccao;
 
@@ -477,9 +683,11 @@
                         statusDiv.innerText = `Alvo Detectado: Lixeira Cheia (${pct}%)`;
                     }
                 }
-                // 3. PROBLEMA: Lixo no Bueiro
+
+                // 5. DETECÇÃO CORRETA: Lixo no Bueiro
                 else if (melhorClasse === "Lixo no Bueiro" && maiorProb > 0.80) {
-                    miraBox.classList.add("mira-detectada");
+                    tempoInicioDiscrepancia = 0;
+                    miraBox.className = "mira-detectada";
                     if (tempoInicioDeteccao === 0) tempoInicioDeteccao = agora;
                     let decorrido = agora - tempoInicioDeteccao;
 
@@ -493,19 +701,23 @@
                         statusDiv.innerText = `Alvo Detectado: Lixo no Bueiro (${pct}%)`;
                     }
                 }
-                // 4. REGULAR: Ponto Limpo
+
+                // 6. ESTADOS LIMPOS
                 else if (melhorClasse.toLowerCase().includes("limp") && maiorProb > 0.78) {
                     tempoInicioDeteccao = 0;
-                    miraBox.classList.remove("mira-detectada");
+                    tempoInicioDiscrepancia = 0;
+                    miraBox.className = "";
                     statusDiv.className = "alerta-limpo";
                     statusDiv.innerText = melhorClasse.includes("Lixeira")
                         ? `✅ LIXEIRA VAZIA E LIMPA (${pct}%)`
                         : `✅ BUEIRO LIMPO (${pct}%)`;
                 }
-                // 5. TRANSIÇÃO
+
+                // 7. OUTROS ESTADOS
                 else {
                     tempoInicioDeteccao = 0;
-                    miraBox.classList.remove("mira-detectada");
+                    tempoInicioDiscrepancia = 0;
+                    miraBox.className = "";
                     statusDiv.className = "";
                     statusDiv.innerText = `${melhorClasse} (${pct}%)`;
                 }
@@ -528,16 +740,12 @@
 
         function dispararFluxoSucesso(local, ocorrencia) {
             sistemaBloqueado = true;
-
-            // Envia para o Sheets em segundo plano
             enviarParaCentral(local, ocorrencia);
 
-            // Esconde vídeo e botões da câmera
             document.getElementById("video-container").style.display = "none";
             document.getElementById("status").style.display = "none";
             document.getElementById("btn-dispatch").style.display = "none";
 
-            // Mostra tela de comemoração com o mascote
             const telaSucesso = document.getElementById("tela-sucesso");
             telaSucesso.style.display = "flex";
 
@@ -560,11 +768,24 @@
             }, 1000);
         }
 
+        function exibirOrientacaoMascote(mensagem) {
+            sistemaBloqueado = true;
+
+            document.getElementById("video-container").style.display = "none";
+            document.getElementById("status").style.display = "none";
+            document.getElementById("btn-dispatch").style.display = "none";
+
+            document.getElementById("texto-orientacao").innerText = `"${mensagem}"`;
+            document.getElementById("tela-orientacao").style.display = "flex";
+        }
+
         function reiniciarInspecao() {
             tempoInicioDeteccao = 0;
+            tempoInicioDiscrepancia = 0;
             sistemaBloqueado = false;
 
             document.getElementById("tela-sucesso").style.display = "none";
+            document.getElementById("tela-orientacao").style.display = "none";
             document.getElementById("video-container").style.display = "flex";
             document.getElementById("status").style.display = "block";
             document.getElementById("status").className = "";
@@ -579,7 +800,17 @@
                 alert("Aponte a câmera para o bueiro ou lixeira antes de enviar!");
                 return;
             }
-            const ocorrenciaEnvio = (classeAtual === "Lixeira Cheia" || LOCAL_MONITORADO.includes("Lixeira"))
+
+            if (ehLocalBueiro && classeAtual.includes("Lixeira")) {
+                exibirOrientacaoMascote("Olá! Você abriu o código do bueiro, mas está apontando para a lixeira! Vamos tentar alinhar a câmera?");
+                return;
+            }
+            if (ehLocalLixeira && classeAtual.includes("Bueiro")) {
+                exibirOrientacaoMascote("Olá! Você abriu o código da praça, mas está apontando para um bueiro! Vamos tentar alinhar a câmera?");
+                return;
+            }
+
+            const ocorrenciaEnvio = (classeAtual === "Lixeira Cheia" || ehLocalLixeira)
                 ? "Lixeira Cheia"
                 : "Lixo no Bueiro";
 
