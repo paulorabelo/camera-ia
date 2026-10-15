@@ -218,45 +218,53 @@
                 const statusDiv = document.getElementById("status");
                 const agora = Date.now();
 
-                // 1. FILTRO DE CLASSE NEUTRA: se for fundo ou incerto, reseta contadores
+                // 1. FILTRO DE CLASSE NEUTRA
                 if (melhorClasse.toLowerCase().includes("neutro") || melhorClasse.toLowerCase().includes("ambiente")) {
                     tempoInicioDeteccaoLixo = 0;
                     statusDiv.className = "";
-                    statusDiv.innerText = `Ambiente Estável (${pct}%)`;
+                    statusDiv.innerText = `👀 Monitorando Ambiente (${pct}%)`;
                 }
-                // 2. DETECÇÃO DE LIXO COM PERSISTÊNCIA TEMPORAL
-                else if (melhorClasse.toLowerCase().includes("lixo") && maiorProb > 0.85) {
-                    if (tempoInicioDeteccaoLixo === 0) {
-                        tempoInicioDeteccaoLixo = agora;
-                    }
-
+                // 2. DETECÇÃO DE LIXEIRA CHEIA
+                else if (melhorClasse === "Lixeira Cheia" && maiorProb > 0.85) {
+                    if (tempoInicioDeteccaoLixo === 0) tempoInicioDeteccaoLixo = agora;
                     let tempoDecorrido = agora - tempoInicioDeteccaoLixo;
 
                     if (tempoDecorrido >= TEMPO_MINIMO_ESTABILIZACAO_MS) {
                         statusDiv.className = "alerta-lixo";
-                        statusDiv.innerText = `🚨 LIXO CONFIRMADO (${pct}%)`;
+                        statusDiv.innerText = `🚨 LIXEIRA CHEIA CONFIRMADA (${pct}%)`;
 
-                        // Cooldown de 20 segundos entre envios automáticos
+                        if (agora - ultimoEnvio > 20000) {
+                            ultimoEnvio = agora;
+                            enviarParaCentral(LOCAL_MONITORADO, "Lixeira Cheia");
+                        }
+                    } else {
+                        statusDiv.className = "alerta-analisando";
+                        statusDiv.innerText = `⚠️ Analisando resíduos na lixeira... (${pct}%)`;
+                    }
+                }
+                // 3. DETECÇÃO DE LIXO NO BUEIRO
+                else if (melhorClasse.toLowerCase().includes("lixo") && maiorProb > 0.85) {
+                    if (tempoInicioDeteccaoLixo === 0) tempoInicioDeteccaoLixo = agora;
+                    let tempoDecorrido = agora - tempoInicioDeteccaoLixo;
+
+                    if (tempoDecorrido >= TEMPO_MINIMO_ESTABILIZACAO_MS) {
+                        statusDiv.className = "alerta-lixo";
+                        statusDiv.innerText = `🚨 LIXO NO BUEIRO CONFIRMADO (${pct}%)`;
+
                         if (agora - ultimoEnvio > 20000) {
                             ultimoEnvio = agora;
                             enviarParaCentral(LOCAL_MONITORADO, "Lixo no Bueiro");
                         }
                     } else {
                         statusDiv.className = "alerta-analisando";
-                        statusDiv.innerText = `⚠️ Analisando resíduo... (${pct}%)`;
+                        statusDiv.innerText = `⚠️ Analisando resíduos no bueiro... (${pct}%)`;
                     }
                 }
-                // 3. BUEIRO LIMPO
-                else if (melhorClasse.toLowerCase().includes("limpo") && maiorProb > 0.80) {
+                // 4. ESTADOS LIMPOS
+                else if (melhorClasse.toLowerCase().includes("limp") && maiorProb > 0.80) {
                     tempoInicioDeteccaoLixo = 0;
                     statusDiv.className = "alerta-limpo";
-                    statusDiv.innerText = `✅ BUEIRO LIMPO (${pct}%)`;
-                }
-                // 4. OUTROS ESTADOS
-                else {
-                    tempoInicioDeteccaoLixo = 0;
-                    statusDiv.className = "";
-                    statusDiv.innerText = `${melhorClasse} (${pct}%)`;
+                    statusDiv.innerText = `✅ LOCAL LIMPO E REGULAR (${pct}%)`;
                 }
             }
             requestAnimationFrame(loopPredict);
@@ -284,7 +292,12 @@
         }
 
         function dispararAlertaManual() {
-            enviarParaCentral(LOCAL_MONITORADO, classeAtual || "Lixo no Bueiro");
+            if (!classeAtual || classeAtual.toLowerCase().includes("neutro")) {
+                alert("Aponte a câmera para o bueiro ou lixeira antes de enviar um alerta!");
+                return;
+            }
+            const ocorrenciaEnvio = classeAtual.includes("Lixeira") ? "Lixeira Cheia" : "Lixo no Bueiro";
+            enviarParaCentral(LOCAL_MONITORADO, ocorrenciaEnvio);
         }
     </script>
 </body>
