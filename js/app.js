@@ -1,4 +1,4 @@
-// Captura e sanitiza o local via URL (?local=...)
+// Captura e sanitiza o parâmetro da URL (?local=...)
 const urlParams = new URLSearchParams(window.location.search);
 const localBruto = urlParams.get('local') || CONFIG.LOCAL_PADRAO;
 
@@ -13,12 +13,13 @@ let sistemaBloqueado = false;
 let tempoInicioDeteccao = 0;
 let tempoInicioDiscrepancia = 0;
 
-// Atualiza cabeçalho de forma segura
+// Atualiza o título na interface
 document.getElementById("titulo-camera").textContent = LOCAL_MONITORADO;
 
-// Identifica o contexto do QR Code escaneado
-const ehLocalBueiro = LOCAL_MONITORADO.toLowerCase().includes("bueiro");
-const ehLocalLixeira = LOCAL_MONITORADO.toLowerCase().includes("lixeira");
+// Identifica o contexto exato do QR Code
+const ehCambuci = LOCAL_MONITORADO.toLowerCase().includes("cambuci");
+const ehYpora = LOCAL_MONITORADO.toLowerCase().includes("ypor");
+const ehLixeira = LOCAL_MONITORADO.toLowerCase().includes("lixeira");
 
 async function iniciarSistema() {
     const btn = document.getElementById("btn-start");
@@ -48,7 +49,7 @@ async function iniciarSistema() {
         loopPredict();
     } catch (err) {
         console.error(err);
-        statusDiv.textContent = "Erro ao acessar a câmera: Verifique as permissões.";
+        statusDiv.textContent = "Erro ao acessar a câmera. Verifique as permissões.";
         btn.style.display = "block";
         btn.textContent = "TENTAR NOVAMENTE";
     }
@@ -75,7 +76,7 @@ async function loopPredict() {
         const miraBox = document.getElementById("mira-box");
         const agora = Date.now();
 
-        // 1. CLASSE NEUTRA: Ambiente estável
+        // 1. NEUTRO: Fundo ou ambiente não identificado
         if (melhorClasse.toLowerCase().includes("neutro") || melhorClasse.toLowerCase().includes("ambiente")) {
             tempoInicioDeteccao = 0;
             tempoInicioDiscrepancia = 0;
@@ -84,91 +85,179 @@ async function loopPredict() {
             statusDiv.textContent = `👀 Monitorando Ambiente (${pct}%)`;
         }
 
-        // 2. OPÇÃO 3 - MASCOTE ORIENTADOR: QR Code de Bueiro, mas câmera apontada para Lixeira
-        else if (ehLocalBueiro && melhorClasse.includes("Lixeira") && maiorProb > 0.80) {
-            tempoInicioDeteccao = 0;
-            miraBox.className = "mira-orientacao";
-            statusDiv.className = "alerta-aviso";
-            statusDiv.textContent = `⚠️ Lixeira detectada em ponto de Bueiro...`;
+        // -------------------------------------------------------------
+        // CENÁRIO A: QR CODE DO BUEIRO CAMBUCI
+        // -------------------------------------------------------------
+        else if (ehCambuci) {
+            // Detecção Correta: Lixo Cambuci
+            if (melhorClasse === "Lixo Cambuci" && maiorProb > 0.80) {
+                tempoInicioDiscrepancia = 0;
+                miraBox.className = "mira-detectada";
+                if (tempoInicioDeteccao === 0) tempoInicioDeteccao = agora;
 
-            if (tempoInicioDiscrepancia === 0) tempoInicioDiscrepancia = agora;
-            if (agora - tempoInicioDiscrepancia >= CONFIG.TEMPO_DISCREPANCIA_MS) {
-                exibirOrientacaoMascote("Olá! Sou o Robô Agente. Você abriu o código do bueiro, mas está apontando para a lixeira! Vamos tentar alinhar a câmera?");
-                return;
+                if (agora - tempoInicioDeteccao >= CONFIG.TEMPO_ESTABILIZACAO_MS) {
+                    statusDiv.className = "alerta-lixo";
+                    statusDiv.textContent = `🚨 LIXO NO BUEIRO CAMBUCI (${pct}%)`;
+                    dispararFluxoSucesso(LOCAL_MONITORADO, "Lixo no Bueiro");
+                    return;
+                } else {
+                    statusDiv.className = "alerta-analisando";
+                    statusDiv.textContent = `Alvo Detectado: Lixo no Bueiro (${pct}%)`;
+                }
+            }
+            // Estado Correto: Bueiro Cambuci Limpo
+            else if (melhorClasse === "Bueiro Cambuci" && maiorProb > 0.78) {
+                tempoInicioDeteccao = 0;
+                tempoInicioDiscrepancia = 0;
+                miraBox.className = "";
+                statusDiv.className = "alerta-limpo";
+                statusDiv.textContent = `✅ BUEIRO CAMBUCI LIMPO (${pct}%)`;
+            }
+            // Discrepância 1: Apontou para Bueiro Yporã
+            else if ((melhorClasse.includes("Ypora") || melhorClasse.includes("Yporã")) && maiorProb > 0.80) {
+                tempoInicioDeteccao = 0;
+                miraBox.className = "mira-orientacao";
+                statusDiv.className = "alerta-aviso";
+                statusDiv.textContent = `⚠️ Detectado Bueiro Yporã neste QR Code...`;
+
+                if (tempoInicioDiscrepancia === 0) tempoInicioDiscrepancia = agora;
+                if (agora - tempoInicioDiscrepancia >= CONFIG.TEMPO_DISCREPANCIA_MS) {
+                    exibirOrientacaoMascote("Olá! Sou o Robô Agente. Você abriu o código da Rua dos Cambucizeiros, mas está apontando para o Bueiro da Rua Yporã! Vamos alinhar a câmera?");
+                    return;
+                }
+            }
+            // Discrepância 2: Apontou para a Lixeira
+            else if (melhorClasse.includes("Lixeira") && maiorProb > 0.80) {
+                tempoInicioDeteccao = 0;
+                miraBox.className = "mira-orientacao";
+                statusDiv.className = "alerta-aviso";
+                statusDiv.textContent = `⚠️ Lixeira detectada em ponto de Bueiro...`;
+
+                if (tempoInicioDiscrepancia === 0) tempoInicioDiscrepancia = agora;
+                if (agora - tempoInicioDiscrepancia >= CONFIG.TEMPO_DISCREPANCIA_MS) {
+                    exibirOrientacaoMascote("Olá! Sou o Robô Agente. Você abriu o código do bueiro, mas está apontando para a lixeira! Vamos alinhar a câmera?");
+                    return;
+                }
+            }
+            else {
+                resetTransicao(melhorClasse, pct, miraBox, statusDiv);
             }
         }
 
-        // 3. OPÇÃO 3 - MASCOTE ORIENTADOR: QR Code de Lixeira, mas câmera apontada para Bueiro
-        else if (ehLocalLixeira && melhorClasse.includes("Bueiro") && maiorProb > 0.80) {
-            tempoInicioDeteccao = 0;
-            miraBox.className = "mira-orientacao";
-            statusDiv.className = "alerta-aviso";
-            statusDiv.textContent = `⚠️ Bueiro detectado em ponto de Lixeira...`;
+        // -------------------------------------------------------------
+        // CENÁRIO B: QR CODE DO BUEIRO YPORÃ
+        // -------------------------------------------------------------
+        else if (ehYpora) {
+            // Detecção Correta: Lixo Ypora
+            if (melhorClasse === "Lixo Ypora" && maiorProb > 0.80) {
+                tempoInicioDiscrepancia = 0;
+                miraBox.className = "mira-detectada";
+                if (tempoInicioDeteccao === 0) tempoInicioDeteccao = agora;
 
-            if (tempoInicioDiscrepancia === 0) tempoInicioDiscrepancia = agora;
-            if (agora - tempoInicioDiscrepancia >= CONFIG.TEMPO_DISCREPANCIA_MS) {
-                exibirOrientacaoMascote("Olá! Sou o Robô Agente. Você abriu o código da praça, mas está apontando para um bueiro! Vamos tentar alinhar a câmera?");
-                return;
+                if (agora - tempoInicioDeteccao >= CONFIG.TEMPO_ESTABILIZACAO_MS) {
+                    statusDiv.className = "alerta-lixo";
+                    statusDiv.textContent = `🚨 LIXO NO BUEIRO YPORÃ (${pct}%)`;
+                    dispararFluxoSucesso(LOCAL_MONITORADO, "Lixo no Bueiro");
+                    return;
+                } else {
+                    statusDiv.className = "alerta-analisando";
+                    statusDiv.textContent = `Alvo Detectado: Lixo no Bueiro (${pct}%)`;
+                }
+            }
+            // Estado Correto: Bueiro Yporã Limpo
+            else if (melhorClasse === "Bueiro Ypora" && maiorProb > 0.78) {
+                tempoInicioDeteccao = 0;
+                tempoInicioDiscrepancia = 0;
+                miraBox.className = "";
+                statusDiv.className = "alerta-limpo";
+                statusDiv.textContent = `✅ BUEIRO YPORÃ LIMPO (${pct}%)`;
+            }
+            // Discrepância 1: Apontou para Bueiro Cambuci
+            else if (melhorClasse.includes("Cambuci") && maiorProb > 0.80) {
+                tempoInicioDeteccao = 0;
+                miraBox.className = "mira-orientacao";
+                statusDiv.className = "alerta-aviso";
+                statusDiv.textContent = `⚠️ Detectado Bueiro Cambuci neste QR Code...`;
+
+                if (tempoInicioDiscrepancia === 0) tempoInicioDiscrepancia = agora;
+                if (agora - tempoInicioDiscrepancia >= CONFIG.TEMPO_DISCREPANCIA_MS) {
+                    exibirOrientacaoMascote("Olá! Sou o Robô Agente. Você abriu o código da Rua Yporã, mas está apontando para o Bueiro dos Cambucizeiros! Vamos alinhar a câmera?");
+                    return;
+                }
+            }
+            // Discrepância 2: Apontou para a Lixeira
+            else if (melhorClasse.includes("Lixeira") && maiorProb > 0.80) {
+                tempoInicioDeteccao = 0;
+                miraBox.className = "mira-orientacao";
+                statusDiv.className = "alerta-aviso";
+                statusDiv.textContent = `⚠️ Lixeira detectada em ponto de Bueiro...`;
+
+                if (tempoInicioDiscrepancia === 0) tempoInicioDiscrepancia = agora;
+                if (agora - tempoInicioDiscrepancia >= CONFIG.TEMPO_DISCREPANCIA_MS) {
+                    exibirOrientacaoMascote("Olá! Sou o Robô Agente. Você abriu o código do bueiro, mas está apontando para a lixeira! Vamos alinhar a câmera?");
+                    return;
+                }
+            }
+            else {
+                resetTransicao(melhorClasse, pct, miraBox, statusDiv);
             }
         }
 
-        // 4. DETECÇÃO VÁLIDA: Lixeira Cheia no ponto correto
-        else if (melhorClasse === "Lixeira Cheia" && maiorProb > 0.80) {
-            tempoInicioDiscrepancia = 0;
-            miraBox.className = "mira-detectada";
-            if (tempoInicioDeteccao === 0) tempoInicioDeteccao = agora;
-            let decorrido = agora - tempoInicioDeteccao;
+        // -------------------------------------------------------------
+        // CENÁRIO C: QR CODE DA LIXEIRA DA PRAÇA
+        // -------------------------------------------------------------
+        else if (ehLixeira) {
+            // Detecção Correta: Lixeira Cheia
+            if (melhorClasse === "Lixeira Cheia" && maiorProb > 0.80) {
+                tempoInicioDiscrepancia = 0;
+                miraBox.className = "mira-detectada";
+                if (tempoInicioDeteccao === 0) tempoInicioDeteccao = agora;
 
-            if (decorrido >= CONFIG.TEMPO_ESTABILIZACAO_MS) {
-                statusDiv.className = "alerta-lixo";
-                statusDiv.textContent = `🚨 LIXEIRA CHEIA CONFIRMADA (${pct}%)`;
-                dispararFluxoSucesso(LOCAL_MONITORADO, "Lixeira Cheia");
-                return;
-            } else {
-                statusDiv.className = "alerta-analisando";
-                statusDiv.textContent = `Alvo Detectado: Lixeira Cheia (${pct}%)`;
+                if (agora - tempoInicioDeteccao >= CONFIG.TEMPO_ESTABILIZACAO_MS) {
+                    statusDiv.className = "alerta-lixo";
+                    statusDiv.textContent = `🚨 LIXEIRA CHEIA CONFIRMADA (${pct}%)`;
+                    dispararFluxoSucesso(LOCAL_MONITORADO, "Lixeira Cheia");
+                    return;
+                } else {
+                    statusDiv.className = "alerta-analisando";
+                    statusDiv.textContent = `Alvo Detectado: Lixeira Cheia (${pct}%)`;
+                }
             }
-        }
-
-        // 5. DETECÇÃO VÁLIDA: Lixo no Bueiro no ponto correto
-        else if (melhorClasse === "Lixo no Bueiro" && maiorProb > 0.80) {
-            tempoInicioDiscrepancia = 0;
-            miraBox.className = "mira-detectada";
-            if (tempoInicioDeteccao === 0) tempoInicioDeteccao = agora;
-            let decorrido = agora - tempoInicioDeteccao;
-
-            if (decorrido >= CONFIG.TEMPO_ESTABILIZACAO_MS) {
-                statusDiv.className = "alerta-lixo";
-                statusDiv.textContent = `🚨 LIXO NO BUEIRO CONFIRMADO (${pct}%)`;
-                dispararFluxoSucesso(LOCAL_MONITORADO, "Lixo no Bueiro");
-                return;
-            } else {
-                statusDiv.className = "alerta-analisando";
-                statusDiv.textContent = `Alvo Detectado: Lixo no Bueiro (${pct}%)`;
+            // Estado Correto: Lixeira Limpa
+            else if (melhorClasse === "Lixeira Limpa" && maiorProb > 0.78) {
+                tempoInicioDeteccao = 0;
+                tempoInicioDiscrepancia = 0;
+                miraBox.className = "";
+                statusDiv.className = "alerta-limpo";
+                statusDiv.textContent = `✅ LIXEIRA VAZIA E LIMPA (${pct}%)`;
             }
-        }
+            // Discrepância: Apontou para Bueiro Cambuci ou Bueiro Yporã
+            else if ((melhorClasse.includes("Cambuci") || melhorClasse.includes("Ypora")) && maiorProb > 0.80) {
+                tempoInicioDeteccao = 0;
+                miraBox.className = "mira-orientacao";
+                statusDiv.className = "alerta-aviso";
+                statusDiv.textContent = `⚠️ Bueiro detectado em ponto de Lixeira...`;
 
-        // 6. ESTADOS LIMPOS REGULARES
-        else if (melhorClasse.toLowerCase().includes("limp") && maiorProb > 0.78) {
-            tempoInicioDeteccao = 0;
-            tempoInicioDiscrepancia = 0;
-            miraBox.className = "";
-            statusDiv.className = "alerta-limpo";
-            statusDiv.textContent = melhorClasse.includes("Lixeira")
-                ? `✅ LIXEIRA VAZIA E LIMPA (${pct}%)`
-                : `✅ BUEIRO LIMPO (${pct}%)`;
-        }
-
-        // 7. OUTROS ESTADOS DE TRANSIÇÃO
-        else {
-            tempoInicioDeteccao = 0;
-            tempoInicioDiscrepancia = 0;
-            miraBox.className = "";
-            statusDiv.className = "";
-            statusDiv.textContent = `${melhorClasse} (${pct}%)`;
+                if (tempoInicioDiscrepancia === 0) tempoInicioDiscrepancia = agora;
+                if (agora - tempoInicioDiscrepancia >= CONFIG.TEMPO_DISCREPANCIA_MS) {
+                    exibirOrientacaoMascote("Olá! Sou o Robô Agente. Você abriu o código da praça, mas está apontando para um bueiro! Vamos alinhar a câmera?");
+                    return;
+                }
+            }
+            else {
+                resetTransicao(melhorClasse, pct, miraBox, statusDiv);
+            }
         }
     }
     requestAnimationFrame(loopPredict);
+}
+
+function resetTransicao(classe, pct, miraBox, statusDiv) {
+    tempoInicioDeteccao = 0;
+    tempoInicioDiscrepancia = 0;
+    miraBox.className = "";
+    statusDiv.className = "";
+    statusDiv.textContent = `${classe} (${pct}%)`;
 }
 
 async function enviarParaCentral(local, ocorrencia) {
@@ -219,7 +308,6 @@ function dispararFluxoSucesso(local, ocorrencia) {
     }, 1000);
 }
 
-// Função da Opção 3: Chama o Mascote Orientador na tela
 function exibirOrientacaoMascote(mensagem) {
     sistemaBloqueado = true;
 
@@ -254,19 +342,20 @@ function dispararAlertaManual() {
         return;
     }
 
-    // Se clicar manualmente apontando para o objeto trocado, o Mascote Orientador também entra em ação!
-    if (ehLocalBueiro && classeAtual.includes("Lixeira")) {
-        exibirOrientacaoMascote("Olá! Sou o Robô Agente. Você abriu o código do bueiro, mas está apontando para a lixeira! Vamos tentar alinhar a câmera?");
+    // Trava manual por ponto
+    if (ehCambuci && (classeAtual.includes("Ypora") || classeAtual.includes("Lixeira"))) {
+        exibirOrientacaoMascote("Olá! Você abriu o código da Rua dos Cambucizeiros! Aponte para o bueiro desta rua.");
         return;
     }
-    if (ehLocalLixeira && classeAtual.includes("Bueiro")) {
-        exibirOrientacaoMascote("Olá! Sou o Robô Agente. Você abriu o código da praça, mas está apontando para um bueiro! Vamos tentar alinhar a câmera?");
+    if (ehYpora && (classeAtual.includes("Cambuci") || classeAtual.includes("Lixeira"))) {
+        exibirOrientacaoMascote("Olá! Você abriu o código da Rua Yporã! Aponte para o bueiro desta rua.");
+        return;
+    }
+    if (ehLixeira && (classeAtual.includes("Cambuci") || classeAtual.includes("Ypora"))) {
+        exibirOrientacaoMascote("Olá! Você abriu o código da praça! Aponte para a lixeira correspondente.");
         return;
     }
 
-    const ocorrenciaEnvio = (classeAtual === "Lixeira Cheia" || ehLocalLixeira)
-        ? "Lixeira Cheia"
-        : "Lixo no Bueiro";
-
+    const ocorrenciaEnvio = ehLixeira ? "Lixeira Cheia" : "Lixo no Bueiro";
     dispararFluxoSucesso(LOCAL_MONITORADO, ocorrenciaEnvio);
 }
