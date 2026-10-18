@@ -337,25 +337,50 @@ function reiniciarInspecao() {
 }
 
 function dispararAlertaManual() {
-    if (!classeAtual || classeAtual.toLowerCase().includes("neutro")) {
-        alert("Aponte a câmera para o bueiro ou lixeira antes de enviar!");
+    const classeMin = (classeAtual || "").toLowerCase().trim();
+
+    // 1. Trava de Ambiente Neutro / Fora de Enquadramento (Opção 3 - Sem popup!)
+    if (!classeAtual || classeMin.includes("neutro") || classeMin.includes("ambiente")) {
+        const alvo = ehLixeira ? "na lixeira." : "no bueiro.";
+        exibirOrientacaoMascote(`ATENÇÃO! Sensor sem leitura de ponto urbano. Mire ${alvo}`);
         return;
     }
 
-    // Trava manual por ponto
-    if (ehCambuci && (classeAtual.includes("Ypora") || classeAtual.includes("Lixeira"))) {
-        exibirOrientacaoMascote("Olá! Você abriu o código da Rua dos Cambucizeiros! Aponte para o bueiro desta rua.");
-        return;
+    // 2. Trava de Discrepância de QR Code vs Alvo (Estilo Tático Direto)
+    if (ehCambuci) {
+        if (classeAtual.includes("Ypora") || classeAtual.includes("Yporã")) {
+            exibirOrientacaoMascote("ATENÇÃO! Câmera apontada para o bueiro da Rua Yporã. Aponte para a Rua dos Cambucizeiros.");
+            return;
+        }
+        if (classeAtual.includes("Lixeira")) {
+            exibirOrientacaoMascote("ATENÇÃO! Câmera apontada para a lixeira. Aponte para o bueiro da Rua dos Cambucizeiros.");
+            return;
+        }
+    } else if (ehYpora) {
+        if (classeAtual.includes("Cambuci")) {
+            exibirOrientacaoMascote("ATENÇÃO! Câmera apontada para o bueiro da Rua dos Cambucizeiros. Aponte para a Rua Yporã.");
+            return;
+        }
+        if (classeAtual.includes("Lixeira")) {
+            exibirOrientacaoMascote("ATENÇÃO! Câmera apontada para a lixeira. Aponte para o bueiro da Rua Yporã.");
+            return;
+        }
+    } else if (ehLixeira) {
+        if (classeAtual.includes("Cambuci") || classeAtual.includes("Ypora") || classeAtual.includes("Yporã")) {
+            exibirOrientacaoMascote("ATENÇÃO! Câmera apontada para um bueiro. Aponte para a lixeira da praça.");
+            return;
+        }
     }
-    if (ehYpora && (classeAtual.includes("Cambuci") || classeAtual.includes("Lixeira"))) {
-        exibirOrientacaoMascote("Olá! Você abriu o código da Rua Yporã! Aponte para o bueiro desta rua.");
-        return;
-    }
-    if (ehLixeira && (classeAtual.includes("Cambuci") || classeAtual.includes("Ypora"))) {
-        exibirOrientacaoMascote("Olá! Você abriu o código da praça! Aponte para a lixeira correspondente.");
+
+    // 3. Trava Educativa: Local já limpo / regularizado (Opção 3)
+    const ehLimpo = classeMin.includes("limp") ||
+        (classeMin.includes("bueiro") && !classeMin.includes("lixo"));
+    if (ehLimpo) {
+        exibirOrientacaoMascote("ATENÇÃO! IA confirmou: área 100% desobstruída e limpa.");
         return;
     }
 
+    // 4. Disparo Manual Válido para a Sala de Situação
     const ocorrenciaEnvio = ehLixeira ? "Lixeira Cheia" : "Lixo no Bueiro";
     dispararFluxoSucesso(LOCAL_MONITORADO, ocorrenciaEnvio);
 }
