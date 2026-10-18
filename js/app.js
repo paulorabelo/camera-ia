@@ -122,7 +122,7 @@ async function loopPredict() {
 
                 if (tempoInicioDiscrepancia === 0) tempoInicioDiscrepancia = agora;
                 if (agora - tempoInicioDiscrepancia >= CONFIG.TEMPO_DISCREPANCIA_MS) {
-                    exibirOrientacaoMascote("Olá! Sou o Robô Agente. Você abriu o código da Rua dos Cambucizeiros, mas está apontando para o Bueiro da Rua Yporã! Vamos alinhar a câmera?");
+                    exibirOrientacaoMascote("ATENÇÃO! Câmera apontada para o bueiro da Rua Yporã. Aponte para a Rua dos Cambucizeiros.");
                     return;
                 }
             }
@@ -135,7 +135,7 @@ async function loopPredict() {
 
                 if (tempoInicioDiscrepancia === 0) tempoInicioDiscrepancia = agora;
                 if (agora - tempoInicioDiscrepancia >= CONFIG.TEMPO_DISCREPANCIA_MS) {
-                    exibirOrientacaoMascote("Olá! Sou o Robô Agente. Você abriu o código do bueiro, mas está apontando para a lixeira! Vamos alinhar a câmera?");
+                    exibirOrientacaoMascote("ATENÇÃO! Câmera apontada para a lixeira. Aponte para o bueiro.");
                     return;
                 }
             }
@@ -181,7 +181,7 @@ async function loopPredict() {
 
                 if (tempoInicioDiscrepancia === 0) tempoInicioDiscrepancia = agora;
                 if (agora - tempoInicioDiscrepancia >= CONFIG.TEMPO_DISCREPANCIA_MS) {
-                    exibirOrientacaoMascote("Olá! Sou o Robô Agente. Você abriu o código da Rua Yporã, mas está apontando para o Bueiro dos Cambucizeiros! Vamos alinhar a câmera?");
+                    exibirOrientacaoMascote("ATENÇÃO! Câmera apontada para o bueiro da Rua dos Cambucizeiros. Aponte para a Rua Yporã.");
                     return;
                 }
             }
@@ -194,7 +194,7 @@ async function loopPredict() {
 
                 if (tempoInicioDiscrepancia === 0) tempoInicioDiscrepancia = agora;
                 if (agora - tempoInicioDiscrepancia >= CONFIG.TEMPO_DISCREPANCIA_MS) {
-                    exibirOrientacaoMascote("Olá! Sou o Robô Agente. Você abriu o código do bueiro, mas está apontando para a lixeira! Vamos alinhar a câmera?");
+                    exibirOrientacaoMascote("ATENÇÃO! Câmera apontada para a lixeira. Aponte para o bueiro.");
                     return;
                 }
             }
@@ -240,7 +240,7 @@ async function loopPredict() {
 
                 if (tempoInicioDiscrepancia === 0) tempoInicioDiscrepancia = agora;
                 if (agora - tempoInicioDiscrepancia >= CONFIG.TEMPO_DISCREPANCIA_MS) {
-                    exibirOrientacaoMascote("Olá! Sou o Robô Agente. Você abriu o código da praça, mas está apontando para um bueiro! Vamos alinhar a câmera?");
+                    exibirOrientacaoMascote("ATENÇÃO! Câmera apontada para um bueiro. Aponte para a praça.");
                     return;
                 }
             }
